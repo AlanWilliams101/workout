@@ -103,7 +103,6 @@
             margin-bottom: 0;
         }
 
-        /* Dedicated Complete Screen Styling */
         #completeDisplay {
             display: none;
             flex-direction: column;
@@ -376,7 +375,11 @@
         if ('speechSynthesis' in window) window.speechSynthesis.onvoiceschanged = populateVoices;
 
         function cleanSpeechText(text) {
-            return text.replace(/\//g, " then ").replace(/-/g, " ").replace(/\s+/g, " ");
+            return text
+                .replace(/(\d+)s\b/gi, "$1 seconds")
+                .replace(/\//g, " then ")
+                .replace(/-/g, " ")
+                .replace(/\s+/g, " ");
         }
 
         function speak(text) {
@@ -391,7 +394,7 @@
             }
         }
 
-        function testVoice() { speak("Station 1: RowErg. Green Pace."); }
+        function testVoice() { speak("Station 4: Floor. 45 seconds Down-Ups, 15 seconds rest, then 45 seconds Kettlebell Swings."); }
 
         function updateDisplay() {
             const step = workout[currentIndex];
