@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Engine Works 32 x 2</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            color: white;
+            transition: background-color 0.5s ease;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            user-select: none;
+        }
+        .green { background-color: #2e7d32; }
+        .orange { background-color: #ef6c00; }
+        .red { background-color: #c62828; }
+        .doublered { background-color: #880e4f; }
+        .idle { background-color: #212121; }
+        .complete-screen { background-color: #1b5e20; }
+        
+        #station { font-size: 4.5rem; font-weight: bold; text-transform: uppercase; margin: 5px; }
+        #intensity { font-size: 2rem; text-transform: uppercase; margin: 5px; padding: 0 20px; line-height: 1.2; }
+        #timer { font-size: 8.5rem; font-weight: bold; font-family: monospace; line-height: 1; margin: 10px 0; }
+        
+        .voice-settings {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 15px 25px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        .voice-settings select, .voice-settings input {
+            font-size: 1rem;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 15px;
+        }
+
+        button { 
+            font-size: 1.5rem; 
+            padding: 12px 30px; 
+            cursor: pointer; 
+            border: none; 
+            border-radius: 8px; 
+            background: #fff; 
+            color: #000; 
+            font-weight: bold; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: transform 0.1s;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        #startBtn {
+            font-size: 2rem;
+            padding: 15px 40px;
+        }
+
+        #explainer { 
+            font-size: 1.3rem; 
+            font-weight: bold; 
+            background: rgba(0, 0, 0, 0.45); 
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            margin-top: 25px; 
+            padding: 15px 30px; 
+            max-width: 800px;
+            width: 85%;
+            color: #ffeb3b; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            text-align: left;
+        }
+
+        #explainer ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        #explainer li {
+            margin-bottom: 5px;
+        }
+
+        #explainer li:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Dedicated Complete Screen Styling */
+        #completeDisplay {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .complete-card {
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 12px;
+            padding: 20px 40px;
+            margin: 20px 0;
+            max-width: 650px;
+        }
+
+        .complete-card ul {
+            text-align: left;
+            font-size: 1.2rem;
+            line-height: 1.8;
+            margin: 0;
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body class="idle">
+
+    <div id="mainDisplay">
+        <div id="station">ENGINE WORKS 32 x 2</div>
+        <div id="intensity">Press Start to Begin</div>
+        <div id="timer">32:00</div>
+    </div>
+
+    <div id="completeDisplay">
+        <div style="font-size: 5rem; font-weight: bold; color: #4caf50; text-shadow: 0 0 10px rgba(0,0,0,0.5);">✔ WORKOUT COMPLETE</div>
+        <div style="font-size: 2.2rem; margin-top: 10px;">32 MINUTES OF SOLID ENGINE WORK DONE</div>
+        <div class="complete-card">
+            <ul>
+                <li><strong>Round 1 (Green):</strong> Aerobic Base & Rhythm Built</li>
+                <li><strong>Round 2 (Orange):</strong> Threshold Effort Maintained</li>
+                <li><strong>Round 3 (Red):</strong> Anaerobic Redline Pushed</li>
+                <li><strong>Round 4 (Double Red):</strong> All-Out Sprints Finished</li>
+            </ul>
+        </div>
+        <button onclick="resetWorkout()" style="font-size: 1.5rem; margin-top: 10px;">RESTART WORKOUT</button>
+    </div>
+
+    <div class="voice-settings" id="voicePanel">
+        <div>
+            <label for="voiceSelect">Voice: </label>
+            <select id="voiceSelect"></select>
+        </div>
+        <div>
+            <label for="rateSelect">Speed: </label>
+            <input type="range" id="rateSelect" min="0.5" max="2" value="1.2" step="0.1">
+        </div>
+        <div>
+            <label for="pitchSelect">Pitch: </label>
+            <input type="range" id="pitchSelect" min="0.5" max="1.5" value="1.2" step="0.1">
+        </div>
+        <button onclick="testVoice()" style="font-size: 0.9rem; padding: 5px 10px;">Test</button>
+    </div>
+
+    <button id="startBtn" onclick="startWorkout()">START WORKOUT</button>
+
+    <div class="controls" id="controlPanel" style="display: none;">
+        <button onclick="prevStation()">&#9664; PREV</button>
+        <button id="pauseBtn" onclick="togglePause()">PAUSE</button>
+        <button onclick="nextStationManually()">NEXT &#9654;</button>
+    </div>
+
+    <div id="explainer" style="display: none;"></div>
+
+    <script>
+        const workout = [
+            // Round 1: Aerobic Build
+            { 
+                station: "RowErg", 
+                zone: "Green Pace", 
+                bullets: [
+                    "Drive hard with legs first, pull with arms last",
+                    "Maintain a smooth, rhythmic recovery stroke",
+                    "Keep consistent split times in the Green Zone"
+                ], 
+                color: "green", duration: 120 
+            },
+            { 
+                station: "SkiErg", 
+                zone: "Green Pace", 
+                bullets: [
+                    "Reach high, hinge at hips, and crunch down",
+                    "Throw your body weight into the handles",
+                    "Maintain steady, full breathing cycles"
+                ], 
+                color: "green", duration: 120 
+            },
+            { 
+                station: "Fixed Bike", 
+                zone: "Orange Pace", 
+                bullets: [
+                    "Maintain a steady, efficient RPM",
+                    "Focus on a smooth 360-degree pedal stroke",
+                    "Hold a consistent threshold power output"
+                ], 
+                color: "orange", duration: 120 
+            },
+            { 
+                station: "Floor", 
+                zone: "45s Down-Ups, 15s rest, then 45s Kettlebell Swings", 
+                bullets: [
+                    "Down-Up: Kick to plank, snap feet wide, stand tall",
+                    "KB Swing: Explosive hip hinge, squeeze glutes at top",
+                    "Use the 15s rest to transition between movements"
+                ], 
+                color: "green", duration: 120 
+            },
+            
+            // Round 2: Threshold Push
+            { 
+                station: "RowErg", 
+                zone: "Orange Pace", 
+                bullets: [
+                    "Increase leg pressure while keeping rhythm",
+                    "Aggressive pull at the finish of the stroke",
+                    "Hold a split 3-5 seconds faster than Green Pace"
+                ], 
+                color: "orange", duration: 120 
+            },
+            { 
+                station: "SkiErg", 
+                zone: "Orange Pace", 
+                bullets: [
+                    "Fast hands returning to the top position",
+                    "Powerful, explosive drive toward the floor",
+                    "Brace core tightly on every downward pull"
+                ], 
+                color: "orange", duration: 120 
+            },
+            { 
+                station: "Fixed Bike", 
+                zone: "Red Pace", 
+                bullets: [
+                    "High cadence push to the high-red threshold",
+                    "Minimize upper body movement; drive with legs",
+                    "Breathe deep to fuel the increased leg demand"
+                ], 
+                color: "red", duration: 120 
+            },
+            { 
+                station: "Floor", 
+                zone: "45s Burpees, 15s rest, then 45s Kettlebell Goblet Squats", 
+                bullets: [
+                    "Burpee: Chest to floor, pop up, full hip extension",
+                    "Goblet Squat: KB at sternum, sit deep, knees out",
+                    "Maintain form even as heart rate climbs"
+                ], 
+                color: "orange", duration: 120 
+            },
+            
+            // Round 3: Redline
+            { 
+                station: "RowErg", 
+                zone: "1 Min Orange / 1 Min Red Pace", 
+                bullets: [
+                    "At 1:00, drop your split time into the Red Zone",
+                    "Increase stroke rate (SPM) for the final minute",
+                    "Eyes forward, chest open, finish strong"
+                ], 
+                color: "red", duration: 120 
+            },
+            { 
+                station: "SkiErg", 
+                zone: "1 Min Orange / 1 Min Red Pace", 
+                bullets: [
+                    "Accelerate handle speed at the 1:00 mark",
+                    "Aggressive hip hinge to drive the final minute",
+                    "Maximum core engagement as you pull down"
+                ], 
+                color: "red", duration: 120 
+            },
+            { 
+                station: "Fixed Bike", 
+                zone: "1 Min Orange / 1 Min Red Pace", 
+                bullets: [
+                    "Stand for power or push seated RPM at 1:00",
+                    "Final minute is a high-power anaerobic push",
+                    "Empty the tank on the pedals"
+                ], 
+                color: "red", duration: 120 
+            },
+            { 
+                station: "Floor", 
+                zone: "45s Kettlebell Swings, 15s rest, then 45s Burpees", 
+                bullets: [
+                    "Swing: Sharp hip snap, drive KB to chest height",
+                    "Burpee: Fast cycle speed, minimize floor time",
+                    "Push through the redline intensity"
+                ], 
+                color: "red", duration: 120 
+            },
+            
+            // Round 4: Double Red Finisher
+            { 
+                station: "RowErg", 
+                zone: "90s Green Pace / 30s MAX SPRINT", 
+                bullets: [
+                    "Recovery for 90s; focus on breathing",
+                    "At 0:30, perform a 100% MAX POWER SPRINT",
+                    "Rip the handle and drive legs for total output"
+                ], 
+                color: "doublered", duration: 120 
+            },
+            { 
+                station: "SkiErg", 
+                zone: "90s Green Pace / 30s MAX SPRINT", 
+                bullets: [
+                    "Breathe and reset for the first 90s",
+                    "At 0:30, all-out explosive sprint to the end",
+                    "Short, violent pulls for maximum speed"
+                ], 
+                color: "doublered", duration: 120 
+            },
+            { 
+                station: "Fixed Bike", 
+                zone: "90s Green Pace / 30s MAX SPRINT", 
+                bullets: [
+                    "Soft pedal for 90s; flush the legs",
+                    "At 0:30, max RPM / Max Watts sprint",
+                    "Don't hold back; finish the bike round here"
+                ], 
+                color: "doublered", duration: 120 
+            },
+            { 
+                station: "Floor", 
+                zone: "30s MAX Burpees / 90s Mat Recovery", 
+                bullets: [
+                    "First 30s: All-out MAX SPRINT Burpees",
+                    "Final 90s: Drop to the mat for full recovery",
+                    "Workout complete—congratulations!"
+                ], 
+                color: "doublered", duration: 120 
+            }
+        ];
+
+        let currentIndex = 0;
+        let timeRemaining = 0;
+        let timerInterval = null;
+        let isPaused = false;
+        let hasStarted = false;
+        let availableVoices = [];
+
+        function populateVoices() {
+            if ('speechSynthesis' in window) {
+                availableVoices = window.speechSynthesis.getVoices();
+                const voiceSelect = document.getElementById('voiceSelect');
+                voiceSelect.innerHTML = '';
+                let selectedIndex = 0;
+                availableVoices.forEach((voice, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    voiceSelect.appendChild(option);
+                    if (voice.name.includes("Google UK English Female")) selectedIndex = index;
+                });
+                if (availableVoices.length > 0) voiceSelect.selectedIndex = selectedIndex;
+            }
+        }
+
+        populateVoices();
+        if ('speechSynthesis' in window) window.speechSynthesis.onvoiceschanged = populateVoices;
+
+        function cleanSpeechText(text) {
+            return text.replace(/\//g, " then ").replace(/-/g, " ").replace(/\s+/g, " ");
+        }
+
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(cleanSpeechText(text));
+                const voiceIndex = document.getElementById('voiceSelect').value;
+                if (availableVoices[voiceIndex]) utterance.voice = availableVoices[voiceIndex];
+                utterance.rate = parseFloat(document.getElementById('rateSelect').value);
+                utterance.pitch = parseFloat(document.getElementById('pitchSelect').value);
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function testVoice() { speak("Station 1: RowErg. Green Pace."); }
+
+        function updateDisplay() {
+            const step = workout[currentIndex];
+            document.getElementById('station').innerText = step.station;
+            document.getElementById('intensity').innerText = step.zone;
+            document.body.className = step.color;
+            
+            const explainerEl = document.getElementById('explainer');
+            if (step.bullets && step.bullets.length > 0) {
+                explainerEl.innerHTML = "<ul>" + step.bullets.map(b => `<li>${b}</li>`).join('') + "</ul>";
+                explainerEl.style.display = "block";
+            } else {
+                explainerEl.style.display = "none";
+            }
+
+            let m = Math.floor(timeRemaining / 60).toString().padStart(2, '0');
+            let s = (timeRemaining % 60).toString().padStart(2, '0');
+            document.getElementById('timer').innerText = `${m}:${s}`;
+        }
+
+        function loadStation(index, announce = true) {
+            if (index >= 0 && index < workout.length) {
+                currentIndex = index;
+                timeRemaining = workout[currentIndex].duration;
+                updateDisplay();
+                if (announce) speak(`Station ${currentIndex + 1}: ${workout[currentIndex].station}. ${workout[currentIndex].zone}.`);
+            } else if (index >= workout.length) {
+                clearInterval(timerInterval);
+                document.getElementById('mainDisplay').style.display = "none";
+                document.getElementById('completeDisplay').style.display = "flex";
+                document.getElementById('explainer').style.display = "none";
+                document.getElementById('controlPanel').style.display = "none";
+                document.body.className = "complete-screen";
+                speak("Workout complete. Fantastic effort across all engines.");
+            }
+        }
+
+        function startWorkout() {
+            hasStarted = true;
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('voicePanel').style.display = 'none';
+            document.getElementById('controlPanel').style.display = 'flex';
+            loadStation(0);
+            timerInterval = setInterval(runTimer, 1000);
+        }
+
+        function resetWorkout() {
+            clearInterval(timerInterval);
+            hasStarted = false;
+            isPaused = false;
+            currentIndex = 0;
+            document.getElementById('completeDisplay').style.display = "none";
+            document.getElementById('mainDisplay').style.display = "block";
+            document.getElementById('startBtn').style.display = "inline-block";
+            document.getElementById('voicePanel').style.display = "flex";
+            document.getElementById('station').innerText = "ENGINE WORKS 32 x 2";
+            document.getElementById('intensity').innerText = "Press Start to Begin";
+            document.getElementById('timer').innerText = "32:00";
+            document.body.className = "idle";
+        }
+
+        function runTimer() {
+            if (isPaused) return;
+            timeRemaining--;
+            updateDisplay();
+            if (timeRemaining <= 3 && timeRemaining > 0) speak(timeRemaining.toString());
+            if (timeRemaining <= 0) loadStation(currentIndex + 1);
+        }
+
+        function togglePause() {
+            if (!hasStarted) return;
+            isPaused = !isPaused;
+            document.getElementById('pauseBtn').innerText = isPaused ? "RESUME" : "PAUSE";
+            speak(isPaused ? "Paused" : "Resuming");
+        }
+
+        function prevStation() {
+            if (!hasStarted) return;
+            if (timeRemaining >= workout[currentIndex].duration - 5) {
+                if (currentIndex > 0) loadStation(currentIndex - 1);
+                else loadStation(0);
+            } else {
+                loadStation(currentIndex, false);
+            }
+        }
+
+        function nextStationManually() {
+            if (!hasStarted) return;
+            loadStation(currentIndex + 1);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') { e.preventDefault(); hasStarted ? togglePause() : startWorkout(); }
+            if (e.code === 'ArrowRight') nextStationManually();
+            if (e.code === 'ArrowLeft') prevStation();
+        });
+    </script>
+</body>
+</html>
