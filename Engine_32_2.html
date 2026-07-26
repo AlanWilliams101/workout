@@ -2,22 +2,31 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Engine Works 32 x 2</title>
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             font-family: Arial, sans-serif;
             text-align: center;
             color: white;
             transition: background-color 0.5s ease;
-            margin: 0;
-            padding: 0;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: space-evenly;
             align-items: center;
             height: 100vh;
+            max-height: 100vh;
+            padding: 10px 20px;
+            overflow: hidden;
             user-select: none;
         }
+
         .green { background-color: #2e7d32; }
         .orange { background-color: #ef6c00; }
         .red { background-color: #c62828; }
@@ -25,37 +34,73 @@
         .idle { background-color: #212121; }
         .complete-screen { background-color: #1b5e20; }
         
-        #station { font-size: 4.5rem; font-weight: bold; text-transform: uppercase; margin: 5px; }
-        #intensity { font-size: 2rem; text-transform: uppercase; margin: 5px; padding: 0 20px; line-height: 1.2; }
-        #timer { font-size: 8.5rem; font-weight: bold; font-family: monospace; line-height: 1; margin: 10px 0; }
+        #mainDisplay {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        #station { 
+            font-size: clamp(2rem, 6vh, 4.5rem); 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            margin: 2px; 
+            line-height: 1.1;
+        }
+
+        #intensity { 
+            font-size: clamp(1.1rem, 3vh, 2rem); 
+            text-transform: uppercase; 
+            margin: 2px; 
+            padding: 0 10px; 
+            line-height: 1.2; 
+        }
+
+        #timer { 
+            font-size: clamp(4rem, 14vh, 8.5rem); 
+            font-weight: bold; 
+            font-family: monospace; 
+            line-height: 1; 
+            margin: 5px 0; 
+        }
         
         .voice-settings {
             background: rgba(0, 0, 0, 0.4);
-            padding: 15px 25px;
+            padding: 10px 20px;
             border-radius: 10px;
-            margin-bottom: 15px;
             display: flex;
-            gap: 20px;
+            gap: 15px;
             align-items: center;
-            font-size: 1rem;
+            font-size: clamp(0.85rem, 2vh, 1rem);
             font-weight: bold;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .voice-settings select, .voice-settings input {
-            font-size: 1rem;
-            padding: 5px;
+            font-size: clamp(0.85rem, 2vh, 1rem);
+            padding: 4px;
             border-radius: 5px;
         }
 
-        .controls {
-            margin-top: 15px;
+        .action-row {
             display: flex;
             gap: 15px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
         }
 
         button { 
-            font-size: 1.5rem; 
-            padding: 12px 30px; 
+            font-size: clamp(1rem, 2.5vh, 1.5rem); 
+            padding: 10px 25px; 
             cursor: pointer; 
             border: none; 
             border-radius: 8px; 
@@ -71,23 +116,32 @@
         }
 
         #startBtn {
-            font-size: 2rem;
-            padding: 15px 40px;
+            font-size: clamp(1.4rem, 3.5vh, 2rem);
+            padding: 12px 35px;
         }
 
+        #fullscreenBtn {
+            font-size: clamp(1.1rem, 2.5vh, 1.5rem);
+            padding: 12px 20px;
+            background: #424242;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        /* Bulleted guide box placed at the BOTTOM */
         #explainer { 
-            font-size: 1.3rem; 
+            font-size: clamp(0.95rem, 2.2vh, 1.3rem); 
             font-weight: bold; 
             background: rgba(0, 0, 0, 0.45); 
             border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 10px;
-            margin-top: 25px; 
-            padding: 15px 30px; 
+            padding: 12px 25px; 
             max-width: 800px;
-            width: 85%;
+            width: 90%;
             color: #ffeb3b; 
             box-shadow: 0 4px 10px rgba(0,0,0,0.4);
             text-align: left;
+            flex-shrink: 1;
         }
 
         #explainer ul {
@@ -96,7 +150,7 @@
         }
 
         #explainer li {
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
 
         #explainer li:last-child {
@@ -108,21 +162,23 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            width: 100%;
         }
 
         .complete-card {
             background: rgba(0, 0, 0, 0.4);
             border: 2px solid rgba(255, 255, 255, 0.4);
             border-radius: 12px;
-            padding: 20px 40px;
-            margin: 20px 0;
+            padding: 15px 30px;
+            margin: 15px 0;
             max-width: 650px;
+            width: 90%;
         }
 
         .complete-card ul {
             text-align: left;
-            font-size: 1.2rem;
-            line-height: 1.8;
+            font-size: clamp(1rem, 2.5vh, 1.2rem);
+            line-height: 1.6;
             margin: 0;
             padding-left: 20px;
         }
@@ -137,8 +193,8 @@
     </div>
 
     <div id="completeDisplay">
-        <div style="font-size: 5rem; font-weight: bold; color: #4caf50; text-shadow: 0 0 10px rgba(0,0,0,0.5);">✔ WORKOUT COMPLETE</div>
-        <div style="font-size: 2.2rem; margin-top: 10px;">32 MINUTES OF SOLID ENGINE WORK DONE</div>
+        <div style="font-size: clamp(2.5rem, 7vh, 5rem); font-weight: bold; color: #4caf50; text-shadow: 0 0 10px rgba(0,0,0,0.5);">✔ WORKOUT COMPLETE</div>
+        <div style="font-size: clamp(1.2rem, 3.5vh, 2.2rem); margin-top: 5px;">32 MINUTES OF SOLID ENGINE WORK DONE</div>
         <div class="complete-card">
             <ul>
                 <li><strong>Round 1 (Green):</strong> Aerobic Base & Rhythm Built</li>
@@ -147,7 +203,7 @@
                 <li><strong>Round 4 (Double Red):</strong> All-Out Sprints Finished</li>
             </ul>
         </div>
-        <button onclick="resetWorkout()" style="font-size: 1.5rem; margin-top: 10px;">RESTART WORKOUT</button>
+        <button onclick="resetWorkout()" style="font-size: clamp(1.1rem, 2.8vh, 1.5rem); margin-top: 5px;">RESTART WORKOUT</button>
     </div>
 
     <div class="voice-settings" id="voicePanel">
@@ -163,10 +219,13 @@
             <label for="pitchSelect">Pitch: </label>
             <input type="range" id="pitchSelect" min="0.5" max="1.5" value="1.2" step="0.1">
         </div>
-        <button onclick="testVoice()" style="font-size: 0.9rem; padding: 5px 10px;">Test</button>
+        <button onclick="testVoice()" style="font-size: 0.85rem; padding: 4px 8px;">Test</button>
     </div>
 
-    <button id="startBtn" onclick="startWorkout()">START WORKOUT</button>
+    <div class="action-row" id="startRow">
+        <button id="startBtn" onclick="startWorkout()">START WORKOUT</button>
+        <button id="fullscreenBtn" onclick="toggleFullScreen()">FULLSCREEN</button>
+    </div>
 
     <div class="controls" id="controlPanel" style="display: none;">
         <button onclick="prevStation()">&#9664; PREV</button>
@@ -434,7 +493,7 @@
 
         function startWorkout() {
             hasStarted = true;
-            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('startRow').style.display = 'none';
             document.getElementById('voicePanel').style.display = 'none';
             document.getElementById('controlPanel').style.display = 'flex';
             loadStation(0);
@@ -447,8 +506,8 @@
             isPaused = false;
             currentIndex = 0;
             document.getElementById('completeDisplay').style.display = "none";
-            document.getElementById('mainDisplay').style.display = "block";
-            document.getElementById('startBtn').style.display = "inline-block";
+            document.getElementById('mainDisplay').style.display = "flex";
+            document.getElementById('startRow').style.display = "flex";
             document.getElementById('voicePanel').style.display = "flex";
             document.getElementById('station').innerText = "ENGINE WORKS 32 x 2";
             document.getElementById('intensity').innerText = "Press Start to Begin";
@@ -484,6 +543,18 @@
         function nextStationManually() {
             if (!hasStarted) return;
             loadStation(currentIndex + 1);
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error enabling fullscreen: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
         }
 
         document.addEventListener('keydown', (e) => {
