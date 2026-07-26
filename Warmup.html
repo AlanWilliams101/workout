@@ -171,6 +171,7 @@
         <button onclick="prevStation()">&#9664; PREV</button>
         <button id="pauseBtn" onclick="togglePause()">PAUSE</button>
         <button onclick="nextStationManually()">NEXT &#9654;</button>
+        <button onclick="toggleFullScreen()">FULLSCREEN</button>
     </div>
 
     <div id="explainer" style="display: none;"></div>
@@ -382,6 +383,18 @@
         function nextStationManually() {
             if (!hasStarted) return;
             loadStation(currentIndex + 1);
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
         }
 
         document.addEventListener('keydown', (e) => {
