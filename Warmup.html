@@ -2,58 +2,126 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Warmup Routine</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warmup Timer</title>
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            width: 100%;
+            min-height: 100vh;
+        }
+
         body {
             font-family: Arial, sans-serif;
             text-align: center;
             color: white;
             transition: background-color 0.5s ease;
-            margin: 0;
-            padding: 0;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            padding: 15px 10px;
+            overflow-y: auto;
             user-select: none;
-            background-color: #212121;
         }
-        .active-step { background-color: #2e7d32; }
+
+        /* Locked state for active workout */
+        body.workout-running {
+            height: 100vh;
+            max-height: 100vh;
+            overflow: hidden;
+            justify-content: space-evenly;
+            padding: 10px;
+        }
+
+        .green { background-color: #2e7d32; }
+        .orange { background-color: #ef6c00; }
+        .red { background-color: #c62828; }
+        .blue { background-color: #1565c0; }
         .idle { background-color: #212121; }
         .complete-screen { background-color: #1b5e20; }
         
-        #station { font-size: 4.5rem; font-weight: bold; text-transform: uppercase; margin: 5px; }
-        #intensity { font-size: 2rem; text-transform: uppercase; margin: 5px; padding: 0 20px; line-height: 1.2; }
-        #timer { font-size: 8.5rem; font-weight: bold; font-family: monospace; line-height: 1; margin: 10px 0; }
+        #mainDisplay {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .workout-running #mainDisplay {
+            margin-bottom: 0;
+        }
+
+        #station { 
+            font-size: clamp(2rem, 6vh, 4.5rem); 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            margin: 2px; 
+            line-height: 1.1;
+        }
+
+        #intensity { 
+            font-size: clamp(1.1rem, 3vh, 2rem); 
+            text-transform: uppercase; 
+            margin: 2px; 
+            padding: 0 10px; 
+            line-height: 1.2; 
+        }
+
+        #timer { 
+            font-size: clamp(4rem, 14vh, 8.5rem); 
+            font-weight: bold; 
+            font-family: monospace; 
+            line-height: 1; 
+            margin: 5px 0; 
+        }
         
         .voice-settings {
             background: rgba(0, 0, 0, 0.4);
-            padding: 15px 25px;
+            padding: 12px 18px;
             border-radius: 10px;
-            margin-bottom: 15px;
             display: flex;
-            gap: 20px;
+            gap: 12px;
             align-items: center;
-            font-size: 1rem;
+            font-size: clamp(0.85rem, 2vh, 1rem);
             font-weight: bold;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 15px;
+            max-width: 90%;
         }
 
         .voice-settings select, .voice-settings input {
-            font-size: 1rem;
-            padding: 5px;
+            font-size: clamp(0.85rem, 2vh, 1rem);
+            padding: 4px;
             border-radius: 5px;
         }
 
+        .action-row {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
         .controls {
-            margin-top: 15px;
             display: flex;
             gap: 15px;
+            justify-content: center;
         }
 
         button { 
-            font-size: 1.5rem; 
-            padding: 12px 30px; 
+            font-size: clamp(1rem, 2.5vh, 1.5rem); 
+            padding: 10px 25px; 
             cursor: pointer; 
             border: none; 
             border-radius: 8px; 
@@ -69,24 +137,33 @@
         }
 
         #startBtn {
-            font-size: 2rem;
-            padding: 15px 40px;
+            font-size: clamp(1.3rem, 3.5vh, 2rem);
+            padding: 12px 30px;
         }
 
-        /* Bulleted guide box placed at the BOTTOM */
+        #fullscreenBtn {
+            font-size: clamp(1rem, 2.5vh, 1.5rem);
+            padding: 12px 20px;
+            background: #424242;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        /* Bulleted guidance box placed ABOVE control buttons */
         #explainer { 
-            font-size: 1.3rem; 
+            font-size: clamp(0.95rem, 2.2vh, 1.3rem); 
             font-weight: bold; 
             background: rgba(0, 0, 0, 0.45); 
             border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 10px;
-            margin-top: 25px; 
-            padding: 15px 30px; 
+            padding: 12px 25px; 
             max-width: 800px;
-            width: 85%;
+            width: 90%;
             color: #ffeb3b; 
             box-shadow: 0 4px 10px rgba(0,0,0,0.4);
             text-align: left;
+            flex-shrink: 1;
+            margin-bottom: 15px;
         }
 
         #explainer ul {
@@ -95,34 +172,35 @@
         }
 
         #explainer li {
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
 
         #explainer li:last-child {
             margin-bottom: 0;
         }
 
-        /* Dedicated Complete Screen Styling */
         #completeDisplay {
             display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            width: 100%;
         }
 
         .complete-card {
             background: rgba(0, 0, 0, 0.4);
             border: 2px solid rgba(255, 255, 255, 0.4);
             border-radius: 12px;
-            padding: 20px 40px;
-            margin: 20px 0;
-            max-width: 600px;
+            padding: 15px 30px;
+            margin: 15px 0;
+            max-width: 650px;
+            width: 90%;
         }
 
         .complete-card ul {
             text-align: left;
-            font-size: 1.2rem;
-            line-height: 1.8;
+            font-size: clamp(1rem, 2.5vh, 1.2rem);
+            line-height: 1.6;
             margin: 0;
             padding-left: 20px;
         }
@@ -133,20 +211,20 @@
     <div id="mainDisplay">
         <div id="station">WARMUP ROUTINE</div>
         <div id="intensity">Press Start to Begin</div>
-        <div id="timer">08:00</div>
+        <div id="timer">10:00</div>
     </div>
 
     <div id="completeDisplay">
-        <div style="font-size: 5rem; font-weight: bold; color: #4caf50; text-shadow: 0 0 10px rgba(0,0,0,0.5);">✔ WARMUP COMPLETE</div>
-        <div style="font-size: 2.2rem; margin-top: 10px;">READY FOR MAIN ENGINE WORKS</div>
+        <div style="font-size: clamp(2.5rem, 7vh, 5rem); font-weight: bold; color: #4caf50; text-shadow: 0 0 10px rgba(0,0,0,0.5);">✔ WARMUP COMPLETE</div>
+        <div style="font-size: clamp(1.2rem, 3.5vh, 2.2rem); margin-top: 5px;">BODY IS PRIMED AND READY FOR WORK</div>
         <div class="complete-card">
             <ul>
-                <li><strong>Cardio Flush:</strong> Core Temp Raised</li>
-                <li><strong>Dynamic Mobility:</strong> Spine, Hips & Shoulders Unlocked</li>
-                <li><strong>Pattern Prep:</strong> Squats, Hinges & Plank Primes Done</li>
+                <li><strong>Joint Mobility:</strong> Ankles, Hips, & Shoulders Primed</li>
+                <li><strong>Aerobic Ramp:</strong> Heart Rate & Body Temp Raised</li>
+                <li><strong>Dynamic Flow:</strong> Core Engaged & Muscle Chains Fired</li>
             </ul>
         </div>
-        <button onclick="resetWarmup()" style="font-size: 1.5rem; margin-top: 10px;">RESTART WARMUP</button>
+        <button onclick="resetWorkout()" style="font-size: clamp(1.1rem, 2.8vh, 1.5rem); margin-top: 5px;">RESTART WARMUP</button>
     </div>
 
     <div class="voice-settings" id="voicePanel">
@@ -162,91 +240,63 @@
             <label for="pitchSelect">Pitch: </label>
             <input type="range" id="pitchSelect" min="0.5" max="1.5" value="1.2" step="0.1">
         </div>
-        <button onclick="testVoice()" style="font-size: 0.9rem; padding: 5px 10px;">Test</button>
+        <button onclick="testVoice()" style="font-size: 0.85rem; padding: 4px 8px;">Test</button>
     </div>
 
-    <button id="startBtn" onclick="startWorkout()">START WARMUP</button>
+    <div class="action-row" id="startRow">
+        <button id="startBtn" onclick="startWorkout()">START WORKOUT</button>
+        <button id="fullscreenBtn" onclick="toggleFullScreen()">FULLSCREEN</button>
+    </div>
+
+    <div id="explainer" style="display: none;"></div>
 
     <div class="controls" id="controlPanel" style="display: none;">
         <button onclick="prevStation()">&#9664; PREV</button>
         <button id="pauseBtn" onclick="togglePause()">PAUSE</button>
         <button onclick="nextStationManually()">NEXT &#9654;</button>
-        <button onclick="toggleFullScreen()">FULLSCREEN</button>
     </div>
 
-    <div id="explainer" style="display: none;"></div>
-
     <script>
-        const warmup = [
+        const workout = [
             { 
-                station: "Cardio Flush", 
-                zone: "2 Minutes Easy Pace (Row / Ski / Bike)", 
+                station: "RowErg / SkiErg", 
+                zone: "Easy Aerobic Flush", 
                 bullets: [
-                    "Light, smooth effort across your chosen engine",
-                    "Focus on long, full breathing cycles",
-                    "Gradually raise core temperature without fatigue"
+                    "Smooth, easy pace to bring heart rate up",
+                    "Focus on full range of motion through hips & arms",
+                    "Breathe steadily and wake up the legs"
                 ], 
-                duration: 120 
+                color: "blue", duration: 180 
             },
             { 
-                station: "Inchworms", 
-                zone: "60 Seconds Controlled Movement", 
+                station: "Mat Flow", 
+                zone: "World's Greatest Stretch & Cat-Camel", 
                 bullets: [
-                    "Keep legs relatively straight to stretch hamstrings",
-                    "Walk hands out smoothly to a high plank position",
-                    "Walk hands back toward feet and stand tall"
+                    "Lunge deep, open chest up toward ceiling",
+                    "Arch and round back smoothly on cat-camel",
+                    "Open hips and loosen lower back"
                 ], 
-                duration: 60 
+                color: "green", duration: 120 
             },
             { 
-                station: "World's Greatest Stretch", 
-                zone: "60 Seconds (Alternate Sides)", 
+                station: "Kettlebell", 
+                zone: "Light Deadlifts & Goblet Holds", 
                 bullets: [
-                    "Step foot forward outside hands into a deep runner's lunge",
-                    "Drop inside elbow down toward your ankle",
-                    "Rotate torso and reach top arm upward to open chest"
+                    "Hinge at hips, squeeze glutes at top",
+                    "Keep spine flat and core braced",
+                    "Prime posterior chain for heavy work"
                 ], 
-                duration: 60 
+                color: "orange", duration: 150 
             },
             { 
-                station: "Kettlebell Halos", 
-                zone: "60 Seconds (Alternate Directions)", 
+                station: "Dynamic Drills", 
+                zone: "Air Squats & Light Down-Ups", 
                 bullets: [
-                    "Hold KB upside down by horns close to chest",
-                    "Trace tight circle around head passing behind neck",
-                    "Keep head still and core tightly braced"
+                    "Drive knees outward on bottom of squat",
+                    "Snap hips quickly at top of down-ups",
+                    "Elevate heart rate into workout threshold"
                 ], 
-                duration: 60 
-            },
-            { 
-                station: "Air Squats", 
-                zone: "60 Seconds Smooth Rhythm", 
-                bullets: [
-                    "Feet shoulder-width apart with chest tall",
-                    "Push knees outward tracking over toes",
-                    "Drive through mid-foot to stand up fully"
-                ], 
-                duration: 60 
-            },
-            { 
-                station: "Cat-Cow Stretch", 
-                zone: "60 Seconds Flow on Mat", 
-                bullets: [
-                    "Set up on hands and knees with flat back",
-                    "Inhale: drop belly down and lift head (Cow)",
-                    "Exhale: arch back toward ceiling and tuck chin (Cat)"
-                ], 
-                duration: 60 
-            },
-            { 
-                station: "Down-Ups & Swings", 
-                zone: "60 Seconds Light Prep", 
-                bullets: [
-                    "Down-Up: hands down, kick feet to plank, snap in, stand",
-                    "KB Swing: hike back between legs, snap hips forward",
-                    "Drive weight to chest height using glutes, not shoulders"
-                ], 
-                duration: 60 
+                color: "red", duration: 150 
             }
         ];
 
@@ -278,7 +328,11 @@
         if ('speechSynthesis' in window) window.speechSynthesis.onvoiceschanged = populateVoices;
 
         function cleanSpeechText(text) {
-            return text.replace(/\//g, " then ").replace(/-/g, " ").replace(/\s+/g, " ");
+            return text
+                .replace(/(\d+)s\b/gi, "$1 seconds")
+                .replace(/\//g, " then ")
+                .replace(/-/g, " ")
+                .replace(/\s+/g, " ");
         }
 
         function speak(text) {
@@ -293,13 +347,13 @@
             }
         }
 
-        function testVoice() { speak("Warmup Step 1: Cardio Flush. 2 minutes easy pace."); }
+        function testVoice() { speak("Warmup block 1: Easy Aerobic Flush."); }
 
         function updateDisplay() {
-            const step = warmup[currentIndex];
+            const step = workout[currentIndex];
             document.getElementById('station').innerText = step.station;
             document.getElementById('intensity').innerText = step.zone;
-            document.body.className = "active-step";
+            document.body.className = step.color + " workout-running";
             
             const explainerEl = document.getElementById('explainer');
             if (step.bullets && step.bullets.length > 0) {
@@ -315,44 +369,46 @@
         }
 
         function loadStation(index, announce = true) {
-            if (index >= 0 && index < warmup.length) {
+            if (index >= 0 && index < workout.length) {
                 currentIndex = index;
-                timeRemaining = warmup[currentIndex].duration;
+                timeRemaining = workout[currentIndex].duration;
                 updateDisplay();
-                if (announce) speak(`${warmup[currentIndex].station}. ${warmup[currentIndex].zone}.`);
-            } else if (index >= warmup.length) {
+                if (announce) speak(`Block ${currentIndex + 1}: ${workout[currentIndex].station}. ${workout[currentIndex].zone}.`);
+            } else if (index >= workout.length) {
                 clearInterval(timerInterval);
                 document.getElementById('mainDisplay').style.display = "none";
                 document.getElementById('completeDisplay').style.display = "flex";
                 document.getElementById('explainer').style.display = "none";
                 document.getElementById('controlPanel').style.display = "none";
-                document.body.className = "complete-screen";
-                speak("Warmup complete. You are primed and ready to start.");
+                document.body.className = "complete-screen workout-running";
+                speak("Warmup complete. Body is ready.");
             }
         }
 
         function startWorkout() {
             hasStarted = true;
-            document.getElementById('startBtn').style.display = 'none';
+            document.body.classList.add("workout-running");
+            document.getElementById('startRow').style.display = 'none';
             document.getElementById('voicePanel').style.display = 'none';
             document.getElementById('controlPanel').style.display = 'flex';
             loadStation(0);
             timerInterval = setInterval(runTimer, 1000);
         }
 
-        function resetWarmup() {
+        function resetWorkout() {
             clearInterval(timerInterval);
             hasStarted = false;
             isPaused = false;
             currentIndex = 0;
+            document.body.classList.remove("workout-running");
+            document.body.className = "idle";
             document.getElementById('completeDisplay').style.display = "none";
-            document.getElementById('mainDisplay').style.display = "block";
-            document.getElementById('startBtn').style.display = "inline-block";
+            document.getElementById('mainDisplay').style.display = "flex";
+            document.getElementById('startRow').style.display = "flex";
             document.getElementById('voicePanel').style.display = "flex";
             document.getElementById('station').innerText = "WARMUP ROUTINE";
             document.getElementById('intensity').innerText = "Press Start to Begin";
-            document.getElementById('timer').innerText = "08:00";
-            document.body.className = "idle";
+            document.getElementById('timer').innerText = "10:00";
         }
 
         function runTimer() {
@@ -372,7 +428,7 @@
 
         function prevStation() {
             if (!hasStarted) return;
-            if (timeRemaining >= warmup[currentIndex].duration - 5) {
+            if (timeRemaining >= workout[currentIndex].duration - 5) {
                 if (currentIndex > 0) loadStation(currentIndex - 1);
                 else loadStation(0);
             } else {
@@ -388,7 +444,7 @@
         function toggleFullScreen() {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(err => {
-                    console.log(`Error: ${err.message}`);
+                    console.log(`Error enabling fullscreen: ${err.message}`);
                 });
             } else {
                 if (document.exitFullscreen) {
