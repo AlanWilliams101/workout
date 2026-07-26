@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Engine Works 32 x 2</title>
+    <title>Engine Works 35 Min (32 Work + 3 Rest)</title>
     <style>
         * {
             box-sizing: border-box;
@@ -42,6 +42,7 @@
         .orange { background-color: #ef6c00; }
         .red { background-color: #c62828; }
         .doublered { background-color: #880e4f; }
+        .blue { background-color: #1565c0; }
         .idle { background-color: #212121; }
         .complete-screen { background-color: #1b5e20; }
         
@@ -82,7 +83,6 @@
             margin: 5px 0; 
         }
 
-        /* NEW Progress Tracker Styling */
         #progressContainer {
             display: none;
             flex-direction: column;
@@ -244,9 +244,9 @@
 <body class="idle">
 
     <div id="mainDisplay">
-        <div id="station">ENGINE WORKS 32 x 2</div>
+        <div id="station">ENGINE WORKS 35 MIN</div>
         <div id="intensity">Press Start to Begin</div>
-        <div id="timer">32:00</div>
+        <div id="timer">35:00</div>
         
         <div id="progressContainer">
             <div id="roundTracker">ROUND 1 OF 4 • STATION 1 OF 16</div>
@@ -258,7 +258,7 @@
 
     <div id="completeDisplay">
         <div style="font-size: clamp(2.5rem, 7vh, 5rem); font-weight: bold; color: #4caf50; text-shadow: 0 0 10px rgba(0,0,0,0.5);">✔ WORKOUT COMPLETE</div>
-        <div style="font-size: clamp(1.2rem, 3.5vh, 2.2rem); margin-top: 5px;">32 MINUTES OF SOLID ENGINE WORK DONE</div>
+        <div style="font-size: clamp(1.2rem, 3.5vh, 2.2rem); margin-top: 5px;">35 MINUTES OF SOLID ENGINE WORK DONE</div>
         <div class="complete-card">
             <ul>
                 <li><strong>Round 1 (Green):</strong> Aerobic Base & Rhythm Built</li>
@@ -302,28 +302,37 @@
     <script>
         const workout = [
             // Round 1
-            { station: "RowErg", zone: "Green Pace", bullets: ["Drive hard with legs first, pull with arms last", "Maintain a smooth, rhythmic recovery stroke", "Keep consistent split times in the Green Zone"], color: "green", duration: 120 },
-            { station: "SkiErg", zone: "Green Pace", bullets: ["Reach high, hinge at hips, and crunch down", "Throw your body weight into the handles", "Maintain steady, full breathing cycles"], color: "green", duration: 120 },
-            { station: "Fixed Bike", zone: "Orange Pace", bullets: ["Maintain a steady, efficient RPM", "Focus on a smooth 360-degree pedal stroke", "Hold a consistent threshold power output"], color: "orange", duration: 120 },
-            { station: "Floor", zone: "45s Down-Ups, 15s rest, then 45s Kettlebell Swings", bullets: ["Down-Up: Kick to plank, snap feet wide, stand tall", "KB Swing: Explosive hip hinge, squeeze glutes at top", "Use the 15s rest to transition between movements"], color: "green", duration: 120 },
+            { isRest: false, station: "RowErg", zone: "Green Pace", bullets: ["Drive hard with legs first, pull with arms last", "Maintain a smooth, rhythmic recovery stroke", "Keep consistent split times in the Green Zone"], color: "green", duration: 120 },
+            { isRest: false, station: "SkiErg", zone: "Green Pace", bullets: ["Reach high, hinge at hips, and crunch down", "Throw your body weight into the handles", "Maintain steady, full breathing cycles"], color: "green", duration: 120 },
+            { isRest: false, station: "Fixed Bike", zone: "Orange Pace", bullets: ["Maintain a steady, efficient RPM", "Focus on a smooth 360-degree pedal stroke", "Hold a consistent threshold power output"], color: "orange", duration: 120 },
+            { isRest: false, station: "Floor", zone: "45s Down-Ups, 15s rest, then 45s Kettlebell Swings", bullets: ["Down-Up: Kick to plank, snap feet wide, stand tall", "KB Swing: Explosive hip hinge, squeeze glutes at top", "Use the 15s rest to transition between movements"], color: "green", duration: 120 },
             
+            // 1 MIN RECOVERY 1
+            { isRest: true, roundCompleted: 1, station: "REST RECOVERY", zone: "1 Minute Transition & Water Break", bullets: ["Grab water and catch your breath", "Flush the legs and shake out the arms", "Prepare mentally for Round 2 (Orange Threshold)"], color: "blue", duration: 60 },
+
             // Round 2
-            { station: "RowErg", zone: "Orange Pace", bullets: ["Increase leg pressure while keeping rhythm", "Aggressive pull at the finish of the stroke", "Hold a split 3-5 seconds faster than Green Pace"], color: "orange", duration: 120 },
-            { station: "SkiErg", zone: "Orange Pace", bullets: ["Fast hands returning to the top position", "Powerful, explosive drive toward the floor", "Brace core tightly on every downward pull"], color: "orange", duration: 120 },
-            { station: "Fixed Bike", zone: "Red Pace", bullets: ["High cadence push to the high-red threshold", "Minimize upper body movement; drive with legs", "Breathe deep to fuel the increased leg demand"], color: "red", duration: 120 },
-            { station: "Floor", zone: "45s Burpees, 15s rest, then 45s Kettlebell Goblet Squats", bullets: ["Burpee: Chest to floor, pop up, full hip extension", "Goblet Squat: KB at sternum, sit deep, knees out", "Maintain form even as heart rate climbs"], color: "orange", duration: 120 },
+            { isRest: false, station: "RowErg", zone: "Orange Pace", bullets: ["Increase leg pressure while keeping rhythm", "Aggressive pull at the finish of the stroke", "Hold a split 3-5 seconds faster than Green Pace"], color: "orange", duration: 120 },
+            { isRest: false, station: "SkiErg", zone: "Orange Pace", bullets: ["Fast hands returning to the top position", "Powerful, explosive drive toward the floor", "Brace core tightly on every downward pull"], color: "orange", duration: 120 },
+            { isRest: false, station: "Fixed Bike", zone: "Red Pace", bullets: ["High cadence push to the high-red threshold", "Minimize upper body movement; drive with legs", "Breathe deep to fuel the increased leg demand"], color: "red", duration: 120 },
+            { isRest: false, station: "Floor", zone: "45s Burpees, 15s rest, then 45s Kettlebell Goblet Squats", bullets: ["Burpee: Chest to floor, pop up, full hip extension", "Goblet Squat: KB at sternum, sit deep, knees out", "Maintain form even as heart rate climbs"], color: "orange", duration: 120 },
             
+            // 1 MIN RECOVERY 2
+            { isRest: true, roundCompleted: 2, station: "REST RECOVERY", zone: "1 Minute Transition & Water Break", bullets: ["Deep, slow diaphragmatic breaths", "Sip water and stay loose", "Prepare for Round 3 (1 Min Orange / 1 Min Red)"], color: "blue", duration: 60 },
+
             // Round 3
-            { station: "RowErg", zone: "1 Min Orange / 1 Min Red Pace", bullets: ["At 1:00, drop your split time into the Red Zone", "Increase stroke rate (SPM) for the final minute", "Eyes forward, chest open, finish strong"], color: "red", duration: 120 },
-            { station: "SkiErg", zone: "1 Min Orange / 1 Min Red Pace", bullets: ["Accelerate handle speed at the 1:00 mark", "Aggressive hip hinge to drive the final minute", "Maximum core engagement as you pull down"], color: "red", duration: 120 },
-            { station: "Fixed Bike", zone: "1 Min Orange / 1 Min Red Pace", bullets: ["Stand for power or push seated RPM at 1:00", "Final minute is a high-power anaerobic push", "Empty the tank on the pedals"], color: "red", duration: 120 },
-            { station: "Floor", zone: "45s Kettlebell Swings, 15s rest, then 45s Burpees", bullets: ["Swing: Sharp hip snap, drive KB to chest height", "Burpee: Fast cycle speed, minimize floor time", "Push through the redline intensity"], color: "red", duration: 120 },
+            { isRest: false, station: "RowErg", zone: "1 Min Orange / 1 Min Red Pace", bullets: ["At 1:00, drop your split time into the Red Zone", "Increase stroke rate (SPM) for the final minute", "Eyes forward, chest open, finish strong"], color: "red", duration: 120 },
+            { isRest: false, station: "SkiErg", zone: "1 Min Orange / 1 Min Red Pace", bullets: ["Accelerate handle speed at the 1:00 mark", "Aggressive hip hinge to drive the final minute", "Maximum core engagement as you pull down"], color: "red", duration: 120 },
+            { isRest: false, station: "Fixed Bike", zone: "1 Min Orange / 1 Min Red Pace", bullets: ["Stand for power or push seated RPM at 1:00", "Final minute is a high-power anaerobic push", "Empty the tank on the pedals"], color: "red", duration: 120 },
+            { isRest: false, station: "Floor", zone: "45s Kettlebell Swings, 15s rest, then 45s Burpees", bullets: ["Swing: Sharp hip snap, drive KB to chest height", "Burpee: Fast cycle speed, minimize floor time", "Push through the redline intensity"], color: "red", duration: 120 },
             
+            // 1 MIN RECOVERY 3
+            { isRest: true, roundCompleted: 3, station: "REST RECOVERY", zone: "1 Minute Transition & Water Break", bullets: ["Final rest period before the sprint round", "Control your heart rate", "Prepare for Round 4 (90s Green / 30s MAX SPRINT)"], color: "blue", duration: 60 },
+
             // Round 4
-            { station: "RowErg", zone: "90s Green Pace / 30s MAX SPRINT", bullets: ["Recovery for 90s; focus on breathing", "At 0:30, perform a 100% MAX POWER SPRINT", "Rip the handle and drive legs for total output"], color: "doublered", duration: 120 },
-            { station: "SkiErg", zone: "90s Green Pace / 30s MAX SPRINT", bullets: ["Breathe and reset for the first 90s", "At 0:30, all-out explosive sprint to the end", "Short, violent pulls for maximum speed"], color: "doublered", duration: 120 },
-            { station: "Fixed Bike", zone: "90s Green Pace / 30s MAX SPRINT", bullets: ["Soft pedal for 90s; flush the legs", "At 0:30, max RPM / Max Watts sprint", "Don't hold back; finish the bike round here"], color: "doublered", duration: 120 },
-            { station: "Floor", zone: "30s MAX Burpees / 90s Mat Recovery", bullets: ["First 30s: All-out MAX SPRINT Burpees", "Final 90s: Drop to the mat for full recovery", "Workout complete—congratulations!"], color: "doublered", duration: 120 }
+            { isRest: false, station: "RowErg", zone: "90s Green Pace / 30s MAX SPRINT", bullets: ["Recovery for 90s; focus on breathing", "At 0:30, perform a 100% MAX POWER SPRINT", "Rip the handle and drive legs for total output"], color: "doublered", duration: 120 },
+            { isRest: false, station: "SkiErg", zone: "90s Green Pace / 30s MAX SPRINT", bullets: ["Breathe and reset for the first 90s", "At 0:30, all-out explosive sprint to the end", "Short, violent pulls for maximum speed"], color: "doublered", duration: 120 },
+            { isRest: false, station: "Fixed Bike", zone: "90s Green Pace / 30s MAX SPRINT", bullets: ["Soft pedal for 90s; flush the legs", "At 0:30, max RPM / Max Watts sprint", "Don't hold back; finish the bike round here"], color: "doublered", duration: 120 },
+            { isRest: false, station: "Floor", zone: "30s MAX Burpees / 90s Mat Recovery", bullets: ["First 30s: All-out MAX SPRINT Burpees", "Final 90s: Drop to the mat for full recovery", "Workout complete—congratulations!"], color: "doublered", duration: 120 }
         ];
 
         let currentIndex = 0;
@@ -369,7 +378,7 @@
             }
         }
 
-        function testVoice() { speak("Station 4: Floor. 45 seconds Down-Ups, 15 seconds rest, then 45 seconds Kettlebell Swings."); }
+        function testVoice() { speak("Rest Recovery: 1 Minute Transition and Water Break."); }
 
         function updateDisplay() {
             const step = workout[currentIndex];
@@ -377,12 +386,21 @@
             document.getElementById('intensity').innerText = step.zone;
             document.body.className = step.color + " workout-running";
             
-            // Round & Progress Calculation
-            const currentRound = Math.floor(currentIndex / 4) + 1;
-            const totalRounds = 4;
-            const progressPercent = ((currentIndex + 1) / workout.length) * 100;
+            // Calculate work stations completed vs total work stations
+            let workStationsCompleted = 0;
+            for (let i = 0; i <= currentIndex; i++) {
+                if (!workout[i].isRest) workStationsCompleted++;
+            }
 
-            document.getElementById('roundTracker').innerText = `ROUND ${currentRound} OF ${totalRounds} • STATION ${currentIndex + 1} OF ${workout.length}`;
+            if (step.isRest) {
+                document.getElementById('roundTracker').innerText = `RECOVERY AFTER ROUND ${step.roundCompleted} OF 4`;
+            } else {
+                let currentRound = Math.ceil(workStationsCompleted / 4);
+                if (currentRound < 1) currentRound = 1;
+                document.getElementById('roundTracker').innerText = `ROUND ${currentRound} OF 4 • STATION ${workStationsCompleted} OF 16`;
+            }
+
+            const progressPercent = ((currentIndex + 1) / workout.length) * 100;
             document.getElementById('progressBar').style.width = `${progressPercent}%`;
 
             const explainerEl = document.getElementById('explainer');
@@ -403,7 +421,13 @@
                 currentIndex = index;
                 timeRemaining = workout[currentIndex].duration;
                 updateDisplay();
-                if (announce) speak(`Station ${currentIndex + 1}: ${workout[currentIndex].station}. ${workout[currentIndex].zone}.`);
+                if (announce) {
+                    if (workout[currentIndex].isRest) {
+                        speak("1 minute recovery. Catch your breath and grab some water.");
+                    } else {
+                        speak(`${workout[currentIndex].station}. ${workout[currentIndex].zone}.`);
+                    }
+                }
             } else if (index >= workout.length) {
                 clearInterval(timerInterval);
                 document.getElementById('mainDisplay').style.display = "none";
@@ -411,7 +435,7 @@
                 document.getElementById('explainer').style.display = "none";
                 document.getElementById('controlPanel').style.display = "none";
                 document.body.className = "complete-screen workout-running";
-                speak("Workout complete. Fantastic effort across all engines.");
+                speak("Workout complete. Outstanding effort across all 4 rounds.");
             }
         }
 
@@ -438,9 +462,9 @@
             document.getElementById('mainDisplay').style.display = "flex";
             document.getElementById('startRow').style.display = "flex";
             document.getElementById('voicePanel').style.display = "flex";
-            document.getElementById('station').innerText = "ENGINE WORKS 32 x 2";
+            document.getElementById('station').innerText = "ENGINE WORKS 35 MIN";
             document.getElementById('intensity').innerText = "Press Start to Begin";
-            document.getElementById('timer').innerText = "32:00";
+            document.getElementById('timer').innerText = "35:00";
         }
 
         function runTimer() {
