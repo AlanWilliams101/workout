@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thursday Zone 2 Flush</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            color: white;
+            transition: background-color 0.5s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 15px 10px;
+            overflow-y: auto;
+            user-select: none;
+        }
+
+        body.workout-running {
+            height: 100vh;
+            max-height: 100vh;
+            overflow: hidden;
+            justify-content: space-evenly;
+            padding: 10px;
+        }
+
+        .green { background-color: #2e7d32; }
+        .zone2 { background-color: #00695c; }
+        .blue { background-color: #1565c0; }
+        .idle { background-color: #212121; }
+        .complete-screen { background-color: #1b5e20; }
+        
+        #mainDisplay {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .workout-running #mainDisplay {
+            margin-bottom: 0;
+        }
+
+        #station { 
+            font-size: clamp(2rem, 6vh, 4.5rem); 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            margin: 2px; 
+            line-height: 1.1;
+        }
+
+        #intensity { 
+            font-size: clamp(1.1rem, 3vh, 2rem); 
+            text-transform: uppercase; 
+            margin: 2px; 
+            padding: 0 10px; 
+            line-height: 1.2; 
+        }
+
+        #timer { 
+            font-size: clamp(4rem, 14vh, 8.5rem); 
+            font-weight: bold; 
+            font-family: monospace; 
+            line-height: 1; 
+            margin: 5px 0; 
+        }
+
+        #progressContainer {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 85%;
+            max-width: 600px;
+            margin: 8px 0;
+        }
+
+        #roundTracker {
+            font-size: clamp(0.9rem, 2.2vh, 1.2rem);
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            color: #ffffff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 12px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: #80cbc4;
+            transition: width 0.4s ease-in-out;
+            box-shadow: 0 0 8px rgba(128, 203, 196, 0.6);
+        }
+        
+        .voice-settings {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 12px 18px;
+            border-radius: 10px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            font-size: clamp(0.85rem, 2vh, 1rem);
+            font-weight: bold;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 15px;
+            max-width: 90%;
+        }
+
+        .voice-settings select, .voice-settings input {
+            font-size: clamp(0.85rem, 2vh, 1rem);
+            padding: 4px;
+            border-radius: 5px;
+        }
+
+        .action-row {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        button { 
+            font-size: clamp(1rem, 2.5vh, 1.5rem); 
+            padding: 10px 25px; 
+            cursor: pointer; 
+            border: none; 
+            border-radius: 8px; 
+            background: #fff; 
+            color: #000; 
+            font-weight: bold; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: transform 0.1s;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        #startBtn {
+            font-size: clamp(1.3rem, 3.5vh, 2rem);
+            padding: 12px 30px;
+        }
+
+        #fullscreenBtn {
+            font-size: clamp(1rem, 2.5vh, 1.5rem);
+            padding: 12px 20px;
+            background: #424242;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        #explainer { 
+            font-size: clamp(0.95rem, 2.2vh, 1.3rem); 
+            font-weight: bold; 
+            background: rgba(0, 0, 0, 0.45); 
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 12px 25px; 
+            max-width: 800px;
+            width: 90%;
+            color: #b2dfdb; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            text-align: left;
+            flex-shrink: 1;
+            margin-bottom: 15px;
+        }
+
+        #explainer ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        #explainer li {
+            margin-bottom: 4px;
+        }
+
+        #explainer li:last-child {
+            margin-bottom: 0;
+        }
+
+        #completeDisplay {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .complete-card {
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 12px;
+            padding: 15px 30px;
+            margin: 15px 0;
+            max-width: 650px;
+            width: 90%;
+        }
+
+        .complete-card ul {
+            text-align: left;
+            font-size: clamp(1rem, 2.5vh, 1.2rem);
+            line-height: 1.6;
+            margin: 0;
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body class="idle">
+
+    <div id="mainDisplay">
+        <div id="station">THURSDAY ZONE 2 FLUSH</div>
+        <div id="intensity">Press Start to Begin</div>
+        <div id="timer">25:00</div>
+        
+        <div id="progressContainer">
+            <div id="roundTracker">BLOCK 1 OF 6</div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progressBar"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="completeDisplay">
+        <div style="font-size: clamp(2.5rem, 7vh, 5rem); font-weight: bold; color: #4caf50; text-shadow: 0 0 10px rgba(0,0,0,0.5);">✔ FLUSH COMPLETE</div>
+        <div style="font-size: clamp(1.2rem, 3.5vh, 2.2rem); margin-top: 5px;">25 MINUTES OF AEROBIC BASEWORK DONE</div>
+        <div class="complete-card">
+            <ul>
+                <li><strong>System Primed:</strong> Lactic acid flushed and legs primed for Friday</li>
+                <li><strong>Aerobic Efficiency:</strong> Mitochondrial density supported</li>
+                <li><strong>Recovery Protected:</strong> CNS fully rested for Friday's Engine session</li>
+            </ul>
+        </div>
+        <button onclick="resetWorkout()" style="font-size: clamp(1.1rem, 2.8vh, 1.5rem); margin-top: 5px;">RESTART SESSION</button>
+    </div>
+
+    <div class="voice-settings" id="voicePanel">
+        <div>
+            <label for="voiceSelect">Voice: </label>
+            <select id="voiceSelect"></select>
+        </div>
+        <div>
+            <label for="rateSelect">Speed: </label>
+            <input type="range" id="rateSelect" min="0.5" max="2" value="1.2" step="0.1">
+        </div>
+        <div>
+            <label for="pitchSelect">Pitch: </label>
+            <input type="range" id="pitchSelect" min="0.5" max="1.5" value="1.2" step="0.1">
+        </div>
+        <button onclick="testVoice()" style="font-size: 0.85rem; padding: 4px 8px;">Test</button>
+    </div>
+
+    <div class="action-row" id="startRow">
+        <button id="startBtn" onclick="startWorkout()">START FLUSH</button>
+        <button id="fullscreenBtn" onclick="toggleFullScreen()">FULLSCREEN</button>
+    </div>
+
+    <div id="explainer" style="display: none;"></div>
+
+    <div class="controls" id="controlPanel" style="display: none;">
+        <button onclick="prevStation()">&#9664; PREV</button>
+        <button id="pauseBtn" onclick="togglePause()">PAUSE</button>
+        <button onclick="nextStationManually()">NEXT &#9654;</button>
+    </div>
+
+    <script>
+        const workout = [
+            // Warmup
+            { station: "Easy Warmup Spin or Spin/Row", zone: "Gentle Movement", bullets: ["Keep stroke rate low and light", "Breathe through nose if possible", "Prepare joints for continuous easy aerobic work"], color: "green", duration: 120 },
+            
+            // Block 1: Fixed Bike
+            { station: "Fixed Bike", zone: "Zone 2 Steady Cadence", bullets: ["Maintain a light, smooth 80-90 RPM", "Full conversational pace—keep heart rate low", "Flush out lingering leg heaviness from the week"], color: "zone2", duration: 300 },
+            
+            // Block 2: RowErg
+            { station: "RowErg", zone: "Zone 2 Smooth Rhythm", bullets: ["Focus on clean leg drive and long recovery stroke", "Target a relaxed 18-20 Strokes Per Minute (SPM)", "Smooth and steady; do not push the split time"], color: "zone2", duration: 300 },
+            
+            // Block 3: SkiErg
+            { station: "SkiErg", zone: "Zone 2 Steady Crunch", bullets: ["Rhythmic hip hinge; throw body weight down smoothly", "Control breathing cycle on every reach", "Keep core engaged without redlining"], color: "zone2", duration: 300 },
+            
+            // Block 4: Floor Mobility & Bodyweight
+            { station: "Floor Mobility", zone: "Controlled Movement & Core", bullets: ["45s Light KB Deadlifts / Glute Bridges", "45s Cat-Camels & Couch Stretches", "Keep movement slow, continuous, and restorative"], color: "zone2", duration: 300 },
+            
+            // Cooldown
+            { station: "Mat Cooldown & Stretch", zone: "Recovery & Breathing", bullets: ["Drop down to the mat", "Slow, deep diaphragmatic exhales", "Ready for Friday's Engine Works!"], color: "blue", duration: 180 }
+        ];
+
+        let currentIndex = 0;
+        let timeRemaining = 0;
+        let timerInterval = null;
+        let isPaused = false;
+        let hasStarted = false;
+        let availableVoices = [];
+
+        function populateVoices() {
+            if ('speechSynthesis' in window) {
+                availableVoices = window.speechSynthesis.getVoices();
+                const voiceSelect = document.getElementById('voiceSelect');
+                voiceSelect.innerHTML = '';
+                let selectedIndex = 0;
+                availableVoices.forEach((voice, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    voiceSelect.appendChild(option);
+                    if (voice.name.includes("Google UK English Female")) selectedIndex = index;
+                });
+                if (availableVoices.length > 0) voiceSelect.selectedIndex = selectedIndex;
+            }
+        }
+
+        populateVoices();
+        if ('speechSynthesis' in window) window.speechSynthesis.onvoiceschanged = populateVoices;
+
+        function cleanSpeechText(text) {
+            return text.replace(/(\d+)s\b/gi, "$1 seconds").replace(/\//g, " then ").replace(/-/g, " ").replace(/\s+/g, " ");
+        }
+
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(cleanSpeechText(text));
+                const voiceIndex = document.getElementById('voiceSelect').value;
+                if (availableVoices[voiceIndex]) utterance.voice = availableVoices[voiceIndex];
+                utterance.rate = parseFloat(document.getElementById('rateSelect').value);
+                utterance.pitch = parseFloat(document.getElementById('pitchSelect').value);
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function testVoice() { speak("Thursday Zone 2 Flush. Keep the effort easy and conversational."); }
+
+        function updateDisplay() {
+            const step = workout[currentIndex];
+            document.getElementById('station').innerText = step.station;
+            document.getElementById('intensity').innerText = step.zone;
+            document.body.className = step.color + " workout-running";
+            
+            document.getElementById('roundTracker').innerText = `BLOCK ${currentIndex + 1} OF ${workout.length}`;
+
+            const progressPercent = ((currentIndex + 1) / workout.length) * 100;
+            document.getElementById('progressBar').style.width = `${progressPercent}%`;
+
+            const explainerEl = document.getElementById('explainer');
+            if (step.bullets && step.bullets.length > 0) {
+                explainerEl.innerHTML = "<ul>" + step.bullets.map(b => `<li>${b}</li>`).join('') + "</ul>";
+                explainerEl.style.display = "block";
+            } else {
+                explainerEl.style.display = "none";
+            }
+
+            let m = Math.floor(timeRemaining / 60).toString().padStart(2, '0');
+            let s = (timeRemaining % 60).toString().padStart(2, '0');
+            document.getElementById('timer').innerText = `${m}:${s}`;
+        }
+
+        function loadStation(index, announce = true) {
+            if (index >= 0 && index < workout.length) {
+                currentIndex = index;
+                timeRemaining = workout[currentIndex].duration;
+                updateDisplay();
+                if (announce) {
+                    speak(`${workout[currentIndex].station}. ${workout[currentIndex].zone}.`);
+                }
+            } else if (index >= workout.length) {
+                clearInterval(timerInterval);
+                document.getElementById('mainDisplay').style.display = "none";
+                document.getElementById('completeDisplay').style.display = "flex";
+                document.getElementById('explainer').style.display = "none";
+                document.getElementById('controlPanel').style.display = "none";
+                document.body.className = "complete-screen workout-running";
+                speak("Zone 2 flush complete. Fantastic recovery effort.");
+            }
+        }
+
+        function startWorkout() {
+            hasStarted = true;
+            document.body.classList.add("workout-running");
+            document.getElementById('startRow').style.display = 'none';
+            document.getElementById('voicePanel').style.display = 'none';
+            document.getElementById('controlPanel').style.display = 'flex';
+            document.getElementById('progressContainer').style.display = 'flex';
+            loadStation(0);
+            timerInterval = setInterval(runTimer, 1000);
+        }
+
+        function resetWorkout() {
+            clearInterval(timerInterval);
+            hasStarted = false;
+            isPaused = false;
+            currentIndex = 0;
+            document.body.classList.remove("workout-running");
+            document.body.className = "idle";
+            document.getElementById('completeDisplay').style.display = "none";
+            document.getElementById('progressContainer').style.display = "none";
+            document.getElementById('mainDisplay').style.display = "flex";
+            document.getElementById('startRow').style.display = "flex";
+            document.getElementById('voicePanel').style.display = "flex";
+            document.getElementById('station').innerText = "THURSDAY ZONE 2 FLUSH";
+            document.getElementById('intensity').innerText = "Press Start to Begin";
+            document.getElementById('timer').innerText = "25:00";
+        }
+
+        function runTimer() {
+            if (isPaused) return;
+            timeRemaining--;
+            updateDisplay();
+            if (timeRemaining <= 3 && timeRemaining > 0) speak(timeRemaining.toString());
+            if (timeRemaining <= 0) loadStation(currentIndex + 1);
+        }
+
+        function togglePause() {
+            if (!hasStarted) return;
+            isPaused = !isPaused;
+            document.getElementById('pauseBtn').innerText = isPaused ? "RESUME" : "PAUSE";
+            speak(isPaused ? "Paused" : "Resuming");
+        }
+
+        function prevStation() {
+            if (!hasStarted) return;
+            if (timeRemaining >= workout[currentIndex].duration - 5) {
+                if (currentIndex > 0) loadStation(currentIndex - 1);
+                else loadStation(0);
+            } else {
+                loadStation(currentIndex, false);
+            }
+        }
+
+        function nextStationManually() {
+            if (!hasStarted) return;
+            loadStation(currentIndex + 1);
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error enabling fullscreen: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') { e.preventDefault(); hasStarted ? togglePause() : startWorkout(); }
+            if (e.code === 'ArrowRight') nextStationManually();
+            if (e.code === 'ArrowLeft') prevStation();
+        });
+    </script>
+</body>
+</html>
