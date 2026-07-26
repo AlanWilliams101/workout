@@ -30,7 +30,6 @@
             user-select: none;
         }
 
-        /* Locked state for active workout */
         body.workout-running {
             height: 100vh;
             max-height: 100vh;
@@ -81,6 +80,43 @@
             font-family: monospace; 
             line-height: 1; 
             margin: 5px 0; 
+        }
+
+        /* NEW Progress Tracker Styling */
+        #progressContainer {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 85%;
+            max-width: 600px;
+            margin: 8px 0;
+        }
+
+        #roundTracker {
+            font-size: clamp(0.9rem, 2.2vh, 1.2rem);
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            color: #ffffff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 12px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: #ffeb3b;
+            transition: width 0.4s ease-in-out;
+            box-shadow: 0 0 8px rgba(255, 235, 59, 0.6);
         }
         
         .voice-settings {
@@ -149,7 +185,6 @@
             border: 1px solid rgba(255, 255, 255, 0.4);
         }
 
-        /* Bulleted guidance box placed ABOVE control buttons */
         #explainer { 
             font-size: clamp(0.95rem, 2.2vh, 1.3rem); 
             font-weight: bold; 
@@ -212,6 +247,13 @@
         <div id="station">WARMUP ROUTINE</div>
         <div id="intensity">Press Start to Begin</div>
         <div id="timer">10:00</div>
+        
+        <div id="progressContainer">
+            <div id="roundTracker">BLOCK 1 OF 4</div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progressBar"></div>
+            </div>
+        </div>
     </div>
 
     <div id="completeDisplay">
@@ -258,46 +300,10 @@
 
     <script>
         const workout = [
-            { 
-                station: "RowErg / SkiErg", 
-                zone: "Easy Aerobic Flush", 
-                bullets: [
-                    "Smooth, easy pace to bring heart rate up",
-                    "Focus on full range of motion through hips & arms",
-                    "Breathe steadily and wake up the legs"
-                ], 
-                color: "blue", duration: 180 
-            },
-            { 
-                station: "Mat Flow", 
-                zone: "World's Greatest Stretch & Cat-Camel", 
-                bullets: [
-                    "Lunge deep, open chest up toward ceiling",
-                    "Arch and round back smoothly on cat-camel",
-                    "Open hips and loosen lower back"
-                ], 
-                color: "green", duration: 120 
-            },
-            { 
-                station: "Kettlebell", 
-                zone: "Light Deadlifts & Goblet Holds", 
-                bullets: [
-                    "Hinge at hips, squeeze glutes at top",
-                    "Keep spine flat and core braced",
-                    "Prime posterior chain for heavy work"
-                ], 
-                color: "orange", duration: 150 
-            },
-            { 
-                station: "Dynamic Drills", 
-                zone: "Air Squats & Light Down-Ups", 
-                bullets: [
-                    "Drive knees outward on bottom of squat",
-                    "Snap hips quickly at top of down-ups",
-                    "Elevate heart rate into workout threshold"
-                ], 
-                color: "red", duration: 150 
-            }
+            { station: "RowErg / SkiErg", zone: "Easy Aerobic Flush", bullets: ["Smooth, easy pace to bring heart rate up", "Focus on full range of motion through hips & arms", "Breathe steadily and wake up the legs"], color: "blue", duration: 180 },
+            { station: "Mat Flow", zone: "World's Greatest Stretch & Cat-Camel", bullets: ["Lunge deep, open chest up toward ceiling", "Arch and round back smoothly on cat-camel", "Open hips and loosen lower back"], color: "green", duration: 120 },
+            { station: "Kettlebell", zone: "Light Deadlifts & Goblet Holds", bullets: ["Hinge at hips, squeeze glutes at top", "Keep spine flat and core braced", "Prime posterior chain for heavy work"], color: "orange", duration: 150 },
+            { station: "Dynamic Drills", zone: "Air Squats & Light Down-Ups", bullets: ["Drive knees outward on bottom of squat", "Snap hips quickly at top of down-ups", "Elevate heart rate into workout threshold"], color: "red", duration: 150 }
         ];
 
         let currentIndex = 0;
@@ -328,11 +334,7 @@
         if ('speechSynthesis' in window) window.speechSynthesis.onvoiceschanged = populateVoices;
 
         function cleanSpeechText(text) {
-            return text
-                .replace(/(\d+)s\b/gi, "$1 seconds")
-                .replace(/\//g, " then ")
-                .replace(/-/g, " ")
-                .replace(/\s+/g, " ");
+            return text.replace(/(\d+)s\b/gi, "$1 seconds").replace(/\//g, " then ").replace(/-/g, " ").replace(/\s+/g, " ");
         }
 
         function speak(text) {
@@ -355,6 +357,11 @@
             document.getElementById('intensity').innerText = step.zone;
             document.body.className = step.color + " workout-running";
             
+            // Progress Calculation
+            const progressPercent = ((currentIndex + 1) / workout.length) * 100;
+            document.getElementById('roundTracker').innerText = `BLOCK ${currentIndex + 1} OF ${workout.length}`;
+            document.getElementById('progressBar').style.width = `${progressPercent}%`;
+
             const explainerEl = document.getElementById('explainer');
             if (step.bullets && step.bullets.length > 0) {
                 explainerEl.innerHTML = "<ul>" + step.bullets.map(b => `<li>${b}</li>`).join('') + "</ul>";
@@ -391,6 +398,7 @@
             document.getElementById('startRow').style.display = 'none';
             document.getElementById('voicePanel').style.display = 'none';
             document.getElementById('controlPanel').style.display = 'flex';
+            document.getElementById('progressContainer').style.display = 'flex';
             loadStation(0);
             timerInterval = setInterval(runTimer, 1000);
         }
@@ -403,6 +411,7 @@
             document.body.classList.remove("workout-running");
             document.body.className = "idle";
             document.getElementById('completeDisplay').style.display = "none";
+            document.getElementById('progressContainer').style.display = "none";
             document.getElementById('mainDisplay').style.display = "flex";
             document.getElementById('startRow').style.display = "flex";
             document.getElementById('voicePanel').style.display = "flex";
