@@ -11,6 +11,11 @@
             padding: 0;
         }
 
+        html, body {
+            width: 100%;
+            min-height: 100vh;
+        }
+
         body {
             font-family: Arial, sans-serif;
             text-align: center;
@@ -18,13 +23,20 @@
             transition: background-color 0.5s ease;
             display: flex;
             flex-direction: column;
-            justify-content: space-evenly;
+            justify-content: center;
             align-items: center;
+            padding: 15px 10px;
+            overflow-y: auto; /* Allows scrolling on setup */
+            user-select: none;
+        }
+
+        /* Locked state for active workout */
+        body.workout-running {
             height: 100vh;
             max-height: 100vh;
-            padding: 10px 20px;
-            overflow: hidden;
-            user-select: none;
+            overflow: hidden; /* Prevents scrollbars during workout */
+            justify-content: space-evenly;
+            padding: 10px;
         }
 
         .green { background-color: #2e7d32; }
@@ -40,6 +52,11 @@
             align-items: center;
             justify-content: center;
             width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .workout-running #mainDisplay {
+            margin-bottom: 0;
         }
 
         #station { 
@@ -68,15 +85,17 @@
         
         .voice-settings {
             background: rgba(0, 0, 0, 0.4);
-            padding: 10px 20px;
+            padding: 12px 18px;
             border-radius: 10px;
             display: flex;
-            gap: 15px;
+            gap: 12px;
             align-items: center;
             font-size: clamp(0.85rem, 2vh, 1rem);
             font-weight: bold;
             flex-wrap: wrap;
             justify-content: center;
+            margin-bottom: 15px;
+            max-width: 90%;
         }
 
         .voice-settings select, .voice-settings input {
@@ -87,9 +106,11 @@
 
         .action-row {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             justify-content: center;
             align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
         }
 
         .controls {
@@ -116,19 +137,18 @@
         }
 
         #startBtn {
-            font-size: clamp(1.4rem, 3.5vh, 2rem);
-            padding: 12px 35px;
+            font-size: clamp(1.3rem, 3.5vh, 2rem);
+            padding: 12px 30px;
         }
 
         #fullscreenBtn {
-            font-size: clamp(1.1rem, 2.5vh, 1.5rem);
+            font-size: clamp(1rem, 2.5vh, 1.5rem);
             padding: 12px 20px;
             background: #424242;
             color: #fff;
             border: 1px solid rgba(255, 255, 255, 0.4);
         }
 
-        /* Bulleted guide box placed at the BOTTOM */
         #explainer { 
             font-size: clamp(0.95rem, 2.2vh, 1.3rem); 
             font-weight: bold; 
@@ -459,7 +479,7 @@
             const step = workout[currentIndex];
             document.getElementById('station').innerText = step.station;
             document.getElementById('intensity').innerText = step.zone;
-            document.body.className = step.color;
+            document.body.className = step.color + " workout-running";
             
             const explainerEl = document.getElementById('explainer');
             if (step.bullets && step.bullets.length > 0) {
@@ -486,13 +506,14 @@
                 document.getElementById('completeDisplay').style.display = "flex";
                 document.getElementById('explainer').style.display = "none";
                 document.getElementById('controlPanel').style.display = "none";
-                document.body.className = "complete-screen";
+                document.body.className = "complete-screen workout-running";
                 speak("Workout complete. Fantastic effort across all engines.");
             }
         }
 
         function startWorkout() {
             hasStarted = true;
+            document.body.classList.add("workout-running");
             document.getElementById('startRow').style.display = 'none';
             document.getElementById('voicePanel').style.display = 'none';
             document.getElementById('controlPanel').style.display = 'flex';
@@ -505,6 +526,8 @@
             hasStarted = false;
             isPaused = false;
             currentIndex = 0;
+            document.body.classList.remove("workout-running");
+            document.body.className = "idle";
             document.getElementById('completeDisplay').style.display = "none";
             document.getElementById('mainDisplay').style.display = "flex";
             document.getElementById('startRow').style.display = "flex";
@@ -512,7 +535,6 @@
             document.getElementById('station').innerText = "ENGINE WORKS 32 x 2";
             document.getElementById('intensity').innerText = "Press Start to Begin";
             document.getElementById('timer').innerText = "32:00";
-            document.body.className = "idle";
         }
 
         function runTimer() {
